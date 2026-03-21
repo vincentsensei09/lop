@@ -67,21 +67,25 @@ async function handleGemini(api, event, args, message, commandName) {
     if (err) return;
 
     try {
-      const baseUrl = "https://smfahim.xyz/ai/ai4chat";
-      const params = new URLSearchParams();
+      const apiUrl = "https://api.groq.com/openai/v1/chat/completions";
+      const apiKey = "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";
+      
+      const response = await axios.post(apiUrl, {
+        model: "openai/gpt-oss-120b",
+        messages: [
+          {
+            role: "user",
+            content: finalPrompt || "what is this"
+          }
+        ]
+      }, {
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        }
+      });
 
-      params.append('action', 'chat');
-      if (finalPrompt) {
-        params.append('prompt', finalPrompt);
-      } else {
-        params.append('prompt', "what is this");
-      }
-
-      const apiUrl = `${baseUrl}?${params.toString()}`;
-
-      const { data } = await axios.get(apiUrl);
-
-      const responseText = data?.output?.result || "❌ No response received from the Gemini API.";
+      const responseText = response.data?.choices?.[0]?.message?.content || "❌ No response received from the Groq API.";
 
       api.getUserInfo(senderID, async (err, infoUser) => {
         const userName = infoUser?.[senderID]?.name || "Unknown User";
