@@ -61,12 +61,12 @@ async function handleGemini(api, event, args, message, commandName) {
     return api.sendMessage(formatFont("❌ Please provide a prompt or reply to an image."), threadID, messageID);
   }
 
-  const thinkingMsg = imageUrl ? " 𝗦𝗘𝗡𝗦𝗘𝗜 𝗜𝗦 𝗔𝗡𝗔𝗟𝗬𝗭𝗜𝗡𝗚..." : " 𝗦𝗘𝗡𝗦𝗘𝗜 𝗜𝗦 𝗧𝗛𝗜𝗡𝗞𝗜𝗡𝗚...";
+  api.setMessageReaction("🤖", messageID, () => { }, true);
 
-  api.sendMessage(formatFont(thinkingMsg), threadID, async (err, info) => {
-    if (err) return;
+  const qoobeeStickers = ["456537923422653", "456540200089092", "456549833421462", "456545143421931"];
+  const randomSticker = qoobeeStickers[Math.floor(Math.random() * qoobeeStickers.length)];
 
-    try {
+  try {
       const apiUrl = "https://api.groq.com/openai/v1/chat/completions";
       const apiKey = "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";
       
@@ -135,7 +135,7 @@ ${responseText}
               });
 
               // Unsend the thinking message and reply with the result + audio
-              message.unsend(info.messageID);
+              setTimeout(() => api.sendMessage({ sticker: randomSticker }, threadID), 2000);
               await message.reply({
                 body: formatFont(replyMessage),
                 attachment: fs.createReadStream(voicePath)
@@ -160,7 +160,8 @@ ${responseText}
 
         } catch (voiceError) {
           console.error("Voice generation error:", voiceError);
-          api.editMessage(formatFont(replyMessage), info.messageID);
+          setTimeout(() => api.sendMessage({ sticker: randomSticker }, threadID), 300);
+          message.reply(formatFont(replyMessage));
         }
       });
 
@@ -179,9 +180,9 @@ ${responseText}
         errorMessage += "Unknown error occurred.";
       }
 
-      api.editMessage(formatFont(errorMessage), info.messageID);
+      setTimeout(() => api.sendMessage({ sticker: randomSticker }, threadID), 300);
+      message.reply(formatFont(errorMessage));
     }
-  }, messageID);
 }
 
 module.exports = {
