@@ -25,7 +25,7 @@ async function handleAI(api, event, args, message, commandName, skipSpeech = fal
   const messageID = event.messageID;
   if (processedMessages.has(messageID)) return;
   processedMessages.add(messageID);
-  
+
   if (processedMessages.size > 100) {
     const firstItem = processedMessages.values().next().value;
     processedMessages.delete(firstItem);
@@ -36,14 +36,12 @@ async function handleAI(api, event, args, message, commandName, skipSpeech = fal
 
   const senderID = event.senderID;
   const threadID = event.threadID;
+  api.setMessageReaction("🤖", messageID, () => { }, true);
 
-  api.setMessageReaction("🤖", messageID, () => {}, true);
-  const loadingMsg = " 𝗩𝗜𝗡𝗖𝗘𝗡𝗧 𝗜𝗦 𝗥𝗘𝗔𝗗𝗜𝗡𝗚 𝗬𝗢𝗨𝗥 𝗖𝗛𝗔𝗧...";
-  
-  api.sendMessage(formatFont(loadingMsg), threadID, async (err, info) => {
-    if (err) return;
+  const qoobeeStickers = ["456537923422653", "456540200089092", "456549833421462", "456545143421931"];
+  const randomSticker = qoobeeStickers[Math.floor(Math.random() * qoobeeStickers.length)];
 
-    try {
+  try {
       const apiUrl = "https://integrate.api.nvidia.com/v1/chat/completions";
       const apiKey = "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";
 
@@ -59,19 +57,19 @@ async function handleAI(api, event, args, message, commandName, skipSpeech = fal
       });
 
       const responseText = response.data?.choices?.[0]?.message?.content || "❌ No response received from the NVIDIA API.";
-      const replyMessage = `𝗩𝗜𝗡𝗖𝗘𝗡𝗧 ☆\n━━━━━━━━━━━━━━━━━━\n${responseText}\n━━━━━━━━━━━━━━━━━━`.trim();
+      const replyMessage = `KURUMI ☆\n━━━━━━━━━━━━━━━━━━\n${responseText}\n━━━━━━━━━━━━━━━━━━`.trim();
 
       if (skipSpeech) {
-          message.unsend(info.messageID);
-          return await message.reply(formatFont(replyMessage), (err, infoReply) => {
-              if (infoReply) {
-                  global.GoatBot.onReply.set(infoReply.messageID, {
-                      commandName: commandName,
-                      author: senderID,
-                      messageID: infoReply.messageID
-                  });
-              }
-          });
+        setTimeout(() => api.sendMessage({ sticker: randomSticker }, threadID), 300);
+        return await message.reply(formatFont(replyMessage), (err, infoReply) => {
+          if (infoReply) {
+            global.GoatBot.onReply.set(infoReply.messageID, {
+              commandName: commandName,
+              author: senderID,
+              messageID: infoReply.messageID
+            });
+          }
+        });
       }
 
       const tempDir = path.join(__dirname, 'tmp');
@@ -98,7 +96,7 @@ async function handleAI(api, event, args, message, commandName, skipSpeech = fal
               writer.on("error", reject);
             });
 
-            message.unsend(info.messageID);
+            setTimeout(() => api.sendMessage({ sticker: randomSticker }, threadID), 2000);
             await message.reply({
               body: formatFont(replyMessage),
               attachment: fs.createReadStream(voicePath)
@@ -120,25 +118,24 @@ async function handleAI(api, event, args, message, commandName, skipSpeech = fal
           }
         }
       } catch (vError) {
-        message.unsend(info.messageID);
+        setTimeout(() => api.sendMessage({ sticker: randomSticker }, threadID), 300);
         message.reply(formatFont(replyMessage));
       }
     } catch (error) {
-      message.unsend(info.messageID);
+      setTimeout(() => api.sendMessage({ sticker: randomSticker }, threadID), 300);
       message.reply(formatFont(`❌ AI Command Failed: ${error.message}`));
     }
-  }, messageID);
 }
 
 module.exports = {
   config: {
-    name: "ai",
+    name: "kurumi",
     version: "2.5.0",
     role: 0,
     author: "VincentSensei",
-    description: "Chat with NVIDIA Nemotron AI (Auto-Vincent)",
+    description: "Chat with NVIDIA Nemotron AI (Auto-Kurumi)",
     category: "AI",
-    usages: "[message] | Mention 'vincent'",
+    usages: "[message] | Mention 'Kurumi'",
     cooldowns: 5
   },
 
@@ -154,9 +151,9 @@ module.exports = {
     const prefix = getPrefix(event.threadID);
     if (event.body.startsWith(prefix)) return;
 
-    if (body.includes('vincent') || body.includes('make') || body.includes('create')) {
+    if (body.includes('kurumi') || body.includes('make') || body.includes('create')) {
       const skipSpeech = body.includes('make') || body.includes('create');
-      const promptText = event.body.replace(/vincent|make|create/gi, "").trim();
+      const promptText = event.body.replace(/kurumi|make|create/gi, "").trim();
       const args = promptText ? promptText.split(/\s+/) : ["hi"];
       return await handleAI(api, event, args, message, commandName, skipSpeech);
     }
